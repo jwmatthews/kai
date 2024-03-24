@@ -83,7 +83,10 @@ def _generate_fix(params: KaiRequestParams):
         f"{SERVER_URL}/get_incident_solutions_for_file",
         data=params.to_json(),
         headers=headers,
-        timeout=1800,  ## We will timeout in 30 minutes if we do not receive a reply
+        timeout=36000,  ## TODO:  Change this something reasonable.
+        # Testing with a HUGE timeout to try a theory that the server is not running in parallel
+        # We will timeout in 300 minutes if we do not receive a reply
+        # timeout=1800,  ## We will timeout in 30 minutes if we do not receive a reply
         # Note that as we are batching incidents, each incident is a separate call inside of server
         # So a file with 20 incidents could take ~20 mins to return as of 3/23/2024.
         # We see a handful of files in Coolstore that have ~15 incidents
@@ -182,6 +185,8 @@ def run_demo_in_parallel(impacted_files, max_workers):
     impacted_files - Dictionary of file paths and violations
     max_workers - Maximum number of threads to run in parallel
     """
+    total_files = len(impacted_files)
+    remaining_files = total_files
     KAI_LOG.info(f"Running in parallel with {max_workers} workers")
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [
@@ -194,6 +199,11 @@ def run_demo_in_parallel(impacted_files, max_workers):
                 KAI_LOG.info(f"Result:  {result}")
             except Exception as exc:
                 KAI_LOG.error(f"Generated an exception: {exc}")
+            remaining_files -= 1
+            KAI_LOG.info(
+                f"{remaining_files} files remaining from total of {total_files}"
+            )
+    KAI_LOG.info("All files processed")
 
 
 def run_demo(impacted_files):
@@ -225,11 +235,11 @@ if __name__ == "__main__":
     ##
     # Sequential run, send a request for each file and wait for the response
     ##
-    run_demo(impacted_files)
+    # run_demo(impacted_files)
     ##
     # Parallel runs, will work on X files at a time.
     # Notes:
     #  - John tried with 10, none succeeded.  Requests hit 10 min mark and timedout, bumped to 30 min timeout
     # .- Ran with 5 workers,  1:23:55.06 total (seems similar to running with a single worker)
     ##
-    # run_demo_in_parallel(impacted_files, 5)
+    run_demo_in_parallel(impacted_files, 10)
