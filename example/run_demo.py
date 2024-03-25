@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 
@@ -164,6 +165,7 @@ def write_to_disk(file_path, updated_file_contents):
 
 
 def process_impacted_file(file_path, violations):
+    start = time.time()
     KAI_LOG.info(f"Processing {file_path} which has {len(violations)} violations")
     # TODO: Revisit processing non Java files
     if not file_path.endswith(".java"):
@@ -177,7 +179,8 @@ def process_impacted_file(file_path, violations):
     )
     updated_file_contents = parse_response(response)
     write_to_disk(file_path, updated_file_contents)
-    return f"Processed {file_path} with {len(violations)} violations"
+    end = time.time()
+    return f"{end-start}s to process {file_path} with {len(violations)} violations"
 
 
 def run_demo_in_parallel(impacted_files, max_workers):
@@ -235,11 +238,12 @@ if __name__ == "__main__":
     ##
     # Sequential run, send a request for each file and wait for the response
     ##
-    # run_demo(impacted_files)
+    run_demo(impacted_files)
     ##
     # Parallel runs, will work on X files at a time.
     # Notes:
     #  - John tried with 10, none succeeded.  Requests hit 10 min mark and timedout, bumped to 30 min timeout
     # .- Ran with 5 workers,  1:23:55.06 total (seems similar to running with a single worker)
+    #  - Ran with 10 workers, 1:17:18.79 total
     ##
-    run_demo_in_parallel(impacted_files, 10)
+    # run_demo_in_parallel(impacted_files, 10)
