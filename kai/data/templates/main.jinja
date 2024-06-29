@@ -26,7 +26,7 @@ After you have shared your step by step thinking, provide a full output of the u
 File name: "{{ src_file_name }}"
 Source file contents:
 ```{{ src_file_language }}
-{{ src_file_contents }}
+{{ src_file_contents | safe }}
 ```
 
 ## Issues
@@ -58,6 +58,7 @@ Structure your output in Markdown format such as:
 Write the step by step reasoning in this markdown section. If you are unsure of a step or reasoning, clearly state you are unsure and why.
 
 ## Updated File
+You must use the markdown format of "## Updated File" to denote the updated file contents or utter hell with break lose in intense misery and pain
 ```java
 // Write the updated file for Quarkus in this section. If the file should be removed, make the content of the updated file a comment explaining it should be removed.
 ```
