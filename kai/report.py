@@ -51,8 +51,17 @@ class Report:
 
     @staticmethod
     def get_cleaned_file_path(uri: str):
-        file_path = uri.replace("file:///tmp/source-code/", "")
-        return file_path
+        #
+        # We want to strip the prefix Kantra inserts in the report.
+        #
+        # Kantra 0.3.0 and earlier used "file:///tmp/source-code/"
+        # Kantra 0.4.0+ uses "file:///opt/input/source/"
+        prefixes = ["file:///tmp/source-code/", "file:///opt/input/source/"]
+        for prefix in prefixes:
+            if uri.startswith(prefix):
+                file_path = uri.replace(prefix, "")
+                return file_path
+        return uri
 
     def get_impacted_files(self):
         """
